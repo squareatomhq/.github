@@ -46,6 +46,7 @@ jobs:
         env:
           ANALYZE_ARGS: ${{ inputs.analyze-args }}
         run: |
+          # shellcheck disable=SC2153
           read -r -a analyze_args <<< "$ANALYZE_ARGS"
           flutter analyze "${analyze_args[@]}"
       - name: Test
