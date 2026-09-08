@@ -1,0 +1,12 @@
+name: Square Atom Android CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: android-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    uses: squareatomhq/.github/.github/workflows/reusable-android-ci.yml@main
