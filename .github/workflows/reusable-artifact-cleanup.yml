@@ -1,0 +1,53 @@
+name: Reusable Artifact Cleanup
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        type: boolean
+        default: true
+      retention-days:
+        type: number
+        default: 14
+      name-contains:
+        type: string
+        default: ""
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup:
+    name: Clean old Actions artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/github-script@v8
+        env:
+          DRY_RUN: ${{ inputs.dry-run }}
+          RETENTION_DAYS: ${{ inputs.retention-days }}
+          NAME_CONTAINS: ${{ inputs.name-contains }}
+        with:
+          script: |
+            const dryRun = process.env.DRY_RUN === 'true';
+            const days = Number(process.env.RETENTION_DAYS);
+            if (!Number.isFinite(days) || days < 1) core.setFailed('retention-days must be at least 1');
+            const cutoff = Date.now() - days * 86400000;
+            const artifacts = await github.paginate(github.rest.actions.listArtifactsForRepo, {
+              ...context.repo,
+              per_page: 100
+            });
+            const matches = artifacts.filter(a =>
+              new Date(a.created_at).getTime() < cutoff &&
+              (!process.env.NAME_CONTAINS || a.name.includes(process.env.NAME_CONTAINS))
+            );
+            core.summary.addHeading('Artifact cleanup')
+              .addRaw(`Mode: ${dryRun ? 'dry run' : 'delete'}\n\nMatched: ${matches.length}`)
+              .write();
+            for (const artifact of matches) {
+              core.info(`${dryRun ? 'Would delete' : 'Deleting'}: ${artifact.name} (${artifact.id})`);
+              if (!dryRun) {
+                await github.rest.actions.deleteArtifact({ ...context.repo, artifact_id: artifact.id });
+              }
+            }

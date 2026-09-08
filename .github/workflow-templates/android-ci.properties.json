@@ -1,0 +1,6 @@
+{
+  "name": "Square Atom Android CI",
+  "description": "Moonpage-standard Gradle tests, lint, and debug Android build.",
+  "iconName": "octicon device-mobile",
+  "categories": ["Java", "Kotlin"]
+}
