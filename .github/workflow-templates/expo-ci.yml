@@ -1,0 +1,17 @@
+name: Square Atom Expo CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: expo-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    uses: squareatomhq/.github/.github/workflows/reusable-expo-ci.yml@main
+    with:
+      run-typecheck: true
+      run-tests: true
+      run-lint: true
+      run-react-doctor: true

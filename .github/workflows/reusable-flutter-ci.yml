@@ -1,0 +1,67 @@
+name: Reusable Flutter CI
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        default: .
+      flutter-version:
+        type: string
+        default: ""
+      flutter-channel:
+        type: string
+        default: stable
+      run-codegen:
+        type: boolean
+        default: false
+      analyze-args:
+        type: string
+        default: --no-fatal-infos
+      build-debug-apk:
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Flutter quality gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up pinned Flutter
+        if: inputs.flutter-version != ''
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter-version }}
+          channel: ${{ inputs.flutter-channel }}
+          cache: true
+      - name: Set up Flutter channel
+        if: inputs.flutter-version == ''
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ inputs.flutter-channel }}
+          cache: true
+      - run: flutter pub get
+      - name: Generate source
+        if: inputs.run-codegen
+        run: dart run build_runner build --delete-conflicting-outputs
+      - name: Analyze
+        env:
+          ANALYZE_ARGS: ${{ inputs.analyze-args }}
+        run: |
+          # shellcheck disable=SC2153
+          read -r -a analyze_args <<< "$ANALYZE_ARGS"
+          flutter analyze "${analyze_args[@]}"
+      - name: Test
+        run: flutter test
+      - name: Build debug APK
+        if: inputs.build-debug-apk
+        run: flutter build apk --debug

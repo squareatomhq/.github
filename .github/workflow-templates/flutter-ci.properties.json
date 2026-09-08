@@ -1,0 +1,6 @@
+{
+  "name": "Square Atom Flutter CI",
+  "description": "Moonpage-standard analysis, tests, and Android build checks for Flutter.",
+  "iconName": "octicon device-mobile",
+  "categories": ["Dart"]
+}
