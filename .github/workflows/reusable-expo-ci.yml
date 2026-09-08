@@ -1,0 +1,77 @@
+name: Reusable Expo CI
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        type: string
+        default: .
+      node-version:
+        type: string
+        default: "22"
+      run-typecheck:
+        type: boolean
+        default: true
+      run-tests:
+        type: boolean
+        default: true
+      run-lint:
+        type: boolean
+        default: true
+      run-expo-check:
+        type: boolean
+        default: true
+      run-expo-doctor:
+        type: boolean
+        default: true
+      run-react-doctor:
+        type: boolean
+        default: false
+      build-debug-export:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Expo quality gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        if: inputs.run-typecheck
+        run: npm run typecheck
+      - name: Tests
+        if: inputs.run-tests
+        run: npm test -- --runInBand
+      - name: Lint
+        if: inputs.run-lint
+        run: npm run lint
+      - name: Expo dependency compatibility
+        if: inputs.run-expo-check
+        run: CI=1 npx expo install --check
+      - name: Expo Doctor
+        if: inputs.run-expo-doctor
+        run: npx expo-doctor
+      - name: React Doctor
+        if: inputs.run-react-doctor
+        uses: millionco/react-doctor@v2
+        with:
+          directory: ${{ inputs.working-directory }}
+      - name: Validate Android JavaScript export
+        if: inputs.build-debug-export
+        run: npx expo export --platform android --output-dir "$RUNNER_TEMP/expo-android-export" --clear
