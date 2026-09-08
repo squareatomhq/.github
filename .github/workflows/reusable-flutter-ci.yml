@@ -8,6 +8,9 @@ on:
         default: .
       flutter-version:
         type: string
+        default: ""
+      flutter-channel:
+        type: string
         default: stable
       run-codegen:
         type: boolean
@@ -33,10 +36,18 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     steps:
       - uses: actions/checkout@v5
-      - uses: subosito/flutter-action@v2
+      - name: Set up pinned Flutter
+        if: inputs.flutter-version != ''
+        uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ inputs.flutter-version }}
-          channel: stable
+          channel: ${{ inputs.flutter-channel }}
+          cache: true
+      - name: Set up Flutter channel
+        if: inputs.flutter-version == ''
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ inputs.flutter-channel }}
           cache: true
       - run: flutter pub get
       - name: Generate source
