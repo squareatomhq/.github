@@ -45,7 +45,9 @@ jobs:
       - name: Analyze
         env:
           ANALYZE_ARGS: ${{ inputs.analyze-args }}
-        run: flutter analyze $ANALYZE_ARGS
+        run: |
+          read -r -a analyze_args <<< "$ANALYZE_ARGS"
+          flutter analyze "${analyze_args[@]}"
       - name: Test
         run: flutter test
       - name: Build debug APK
