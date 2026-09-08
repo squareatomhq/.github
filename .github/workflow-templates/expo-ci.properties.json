@@ -1,0 +1,6 @@
+{
+  "name": "Square Atom Expo CI",
+  "description": "Moonpage-standard quality checks for Expo and React Native applications.",
+  "iconName": "octicon device-mobile",
+  "categories": ["JavaScript", "TypeScript"]
+}
