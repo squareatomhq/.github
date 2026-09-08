@@ -7,7 +7,6 @@ Moonpage is the behavioral reference for CI depth, Android releases, artifact hy
 - `reusable-expo-ci.yml`: Expo/React Native validation
 - `reusable-flutter-ci.yml`: Flutter analysis, tests, code generation, and debug build
 - `reusable-android-ci.yml`: Native Gradle tests, lint, and debug build
-- `reusable-android-release.yml`: Common Android artifact, GitHub Release, and optional Play publishing
 - `reusable-discord-notification.yml`: Safe metadata-only Discord reporting
 - `reusable-artifact-cleanup.yml`: Manual, dry-run-first artifact cleanup
 
@@ -22,7 +21,7 @@ Moonpage is the behavioral reference for CI depth, Android releases, artifact hy
 
 ## Safety
 
-Callers define event triggers. A `pull_request_target` caller must only invoke metadata-only notification logic and must never check out or execute pull-request code. Production signing secrets remain repository- or environment-scoped. The shared Discord webhook may be an organization secret.
+Callers define event triggers. A `pull_request_target` caller must only invoke metadata-only notification logic and must never check out or execute pull-request code. Production signing secrets remain repository- or environment-scoped. Release build workflows stay repository-local because each app has different signing integration and build scripts; they follow the same naming, permissions, validation, artifact, release, and Play-publishing standard without routing keystore credentials through a generic command runner. The shared Discord webhook may be an organization secret.
 
 ## Versioning
 
