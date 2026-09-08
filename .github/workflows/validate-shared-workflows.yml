@@ -1,0 +1,30 @@
+name: Validate shared workflows
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/workflow-templates/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - ".github/workflow-templates/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-workflows-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    name: Actionlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate GitHub Actions syntax
+        uses: docker://rhysd/actionlint:1.7.7
