@@ -6,6 +6,8 @@
   <a href="https://www.squareatom.tech">Website</a>
 </p>
 
+<img width="3840" height="2160" alt="image" src="https://github.com/user-attachments/assets/53ece193-1cbb-4855-9e86-92f2af78c2a9" />
+
 ---
 
 ## About us
