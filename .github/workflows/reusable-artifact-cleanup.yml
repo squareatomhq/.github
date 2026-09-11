@@ -3,6 +3,14 @@ name: Reusable Artifact Cleanup
 on:
   workflow_call:
     inputs:
+      runner:
+        description: >-
+          JSON array of runner labels, as chosen by the caller's `pick-runner`
+          probe. Callers that route through the probe pass its output so the job
+          falls back to the org self-hosted Fedora runner when hosted Actions
+          are unavailable. Defaults to hosted-only for callers that do not.
+        type: string
+        default: '["ubuntu-latest"]'
       dry-run:
         type: boolean
         default: true
@@ -20,7 +28,7 @@ permissions:
 jobs:
   cleanup:
     name: Clean old Actions artifacts
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(inputs.runner) }}
     timeout-minutes: 10
     steps:
       - uses: actions/github-script@v8
