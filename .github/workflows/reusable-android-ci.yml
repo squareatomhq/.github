@@ -76,6 +76,14 @@ jobs:
           distribution: temurin
           java-version: ${{ inputs.java-version }}
       - uses: android-actions/setup-android@v3
+        with:
+          # Without an explicit `packages`, setup-android defaults to
+          # "tools platform-tools" and sdkmanager exits 1 — the `tools`
+          # package no longer exists. Moonpage pins platform-tools for this
+          # reason, and skills/android.yml was fixed the same way.
+          # setup-android passes `packages` as ONE sdkmanager arg — do not use
+          # a multiline list (it becomes a single invalid package name).
+          packages: platform-tools
       - uses: gradle/actions/setup-gradle@v4
       - run: chmod +x gradlew
       - name: Unit tests
