@@ -20,9 +20,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  actionlint:
-    name: Actionlint
+  # Chooses the runner for the job below.
+  #
+  # GitHub cannot retry a job on a different runner: `runs-on` is resolved once when the job
+  # is queued, and a job with no matching runner waits in the queue (up to 24h) instead of
+  # failing over. So the choice has to be made *before* the real job is scheduled.
+  #
+  # This job does nothing but succeed on a hosted runner. If hosted Actions are usable it
+  # emits the hosted label and the job below runs there. If they are not — exhausted minutes
+  # fail a job with "The job was not started because ..." rather than queueing it — the output
+  # is never set, and the empty value falls through to the self-hosted labels.
+  #
+  # continue-on-error keeps that expected failure from marking the whole run red.
+  pick-runner:
+    name: 🧭 Pick a runner
     runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 5
+    outputs:
+      runner: ${{ steps.pick.outputs.runner }}
+    steps:
+      - id: pick
+        run: echo 'runner=["ubuntu-latest"]' >> "$GITHUB_OUTPUT"
+
+  actionlint:
+    needs: pick-runner
+    # Runs whether or not the probe succeeded; only a cancelled run skips it.
+    if: ${{ !cancelled() }}
+    runs-on: ${{ fromJSON(needs.pick-runner.outputs.runner || '["self-hosted","Linux","X64"]') }}
+    name: Actionlint
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
